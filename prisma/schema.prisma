@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model adresse {
+  id          Int           @id @default(autoincrement())
+  ville       String?
+  commune     String?
+  rue         String?
+  planteur    planteur[]
+  utilisateur utilisateur[]
+}
+
+model champ {
+  id               Int                @id @default(autoincrement())
+  planteur_id      Int?
+  secteur          String?
+  axe              String?
+  village          String?
+  superficie       Float
+  nombre_tige      Int?
+  nombre_culture   Int?
+  etat             String?
+  created_at       DateTime?          @default(now())
+  planteur         planteur?          @relation(fields: [planteur_id], references: [id])
+  pratiqueagricole pratiqueagricole[]
+
+  @@index([planteur_id], name: "planteur_id")
+}
+
+model planteur {
+  id         Int      @id @default(autoincrement())
+  name       String
+  phone      String?
+  address_id Int?
+  adresse    adresse? @relation(fields: [address_id], references: [id])
+  champ      champ[]
+
+  @@index([address_id], name: "address_id")
+}
+
+model pratiqueagricole {
+  id           Int          @id @default(autoincrement())
+  champ_id     Int?
+  etat_plante  String?
+  fermentation String
+  sechage      String
+  tail         String
+  observation  String?
+  created_at   DateTime?    @default(now())
+  agronome_id  Int?
+  utilisateur  utilisateur? @relation(fields: [agronome_id], references: [id])
+  champ        champ?       @relation(fields: [champ_id], references: [id])
+
+  @@index([agronome_id], name: "agronome_id")
+  @@index([champ_id], name: "champ_id")
+}
+
+model utilisateur {
+  id               Int                @id @default(autoincrement())
+  name             String
+  address_id       Int?
+  phone            String?
+  matricule        String?
+  email            String             @unique
+  password         String
+  role             String
+  created_at       DateTime?          @default(now())
+  adresse          adresse?           @relation(fields: [address_id], references: [id])
+  pratiqueagricole pratiqueagricole[]
+
+  @@index([address_id], name: "address_id")
+}
